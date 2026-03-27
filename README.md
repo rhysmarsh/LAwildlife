@@ -4,7 +4,7 @@
 
 🦎 **19 lizards** · 🐍 **28 snakes** · 🐢 **5 turtles** · 🐸 **11 frogs & toads** · 🔥 **7 salamanders** · 🦁 **16 large mammals** · 🐿️ **34 small mammals** · 🦇 **19 bats** · 🦭 **16 marine mammals** · 🐟 **29 freshwater fish** · 🐊 **10 introduced herps** + 12 subspecies
 
-**Live at [lawildlife.org](https://lawildlife.org)**
+**Live at [lawildlife.org](https://la-fauna.org)**
 
 ## Features
 
