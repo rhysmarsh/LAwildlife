@@ -5,7 +5,7 @@
 ## Guide 4: LA County Wildlife Field Guide (lawildlife.org)
 
 **Status**: v3.003 — deploy-ready, 53/53 pre-publish checks passed
-**Species**: 256 across 9 taxa groups (247 unique binomials + 9 subspecies/cross-refs)
+**Species**: 255 across 9 taxa groups (247 unique binomials + 9 subspecies/cross-refs)
 **Architecture**: Two-file (index.html 69 KB + species-data.json 293 KB + sw.js 1 KB)
 **IDB name**: `vertGuidePhotos`
 **SW cache**: `la-fauna-guide-v3.003`
@@ -22,10 +22,10 @@ FISH:       🐟 Freshwater & Estuarine Fish (44)
 ```
 
 ### Key Metrics
-- **256 species** across 9 tabs, 78 unique families
+- **255 species** across 9 tabs, 78 unique families
 - **Establishment**: 182 native, 71 introduced, 3 invasive — per-species `est` field
-- **100% unique hp ecological notes** across all 256 species (0 duplicates)
-- **fm.vs**: 256/256 (100%), fm.Habitat: 256/256 (100%), fm.Urban: 127/256 (50%)
+- **100% unique hp ecological notes** across all 255 species (0 duplicates)
+- **fm.vs**: 255/255 (100%), fm.Habitat: 255/255 (100%), fm.Urban: 127/255 (50%)
 - **fm fields**: min 4, mean 6.3; desc: min 123 chars, mean 199; hp: min 83 chars
 - **Cross-links**: 34 terms (28 PLANT_LINKS → la-flora.org, 6 FUNGI_LINKS → lafungi.org)
 - **14 frog/toad call descriptions** with CaliforniaHerps audio links
