@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
-<title>LA County Wildlife Field Guide — 255 Species of Reptiles, Amphibians, Mammals & Fish</title>
+<title>LA County Wildlife Field Guide — 252 Species of Reptiles, Amphibians, Mammals & Fish</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="LAWildlife">
@@ -141,6 +141,15 @@ button{font-family:inherit;cursor:pointer}input{font-family:inherit}
 .ds-call-desc{font-size:11px;color:#555;line-height:1.5;margin-bottom:6px}
 .ds-call-link{display:inline-block;font-size:11px;font-weight:600;color:#7B1FA2;text-decoration:none;padding:3px 10px;border:1px solid #CE93D8;border-radius:4px;transition:all 0.15s}
 .ds-call-link:hover{background:#7B1FA2;color:#fff}
+/* v3: Subspecies section in detail sheet */
+.ds-ssp-section{margin:12px 0;padding:10px;background:#f8f6f2;border-radius:8px;border-left:3px solid var(--gold)}
+.ds-ssp-title{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px}
+.ds-ssp-entry{padding:6px 0;border-bottom:1px solid #e8e0d4}
+.ds-ssp-entry:last-child{border-bottom:none}
+.ds-ssp-name{font-size:12px;font-weight:600;color:var(--forest)}
+.ds-ssp-sn{font-style:italic;font-weight:400;color:#888;font-size:11px}
+.ds-ssp-desc{font-size:11px;color:#555;line-height:1.5;margin-top:3px}
+.ds-ssp-hp{font-size:10px;color:#888;line-height:1.4;margin-top:2px}
 /* Venomous warning — replaces fungi toxicity warning */
 .ds-venom-warn{margin-bottom:14px;padding:12px 14px;border-radius:10px;border-left:4px solid #C62828;background:rgba(198,40,40,0.08);display:flex;align-items:flex-start;gap:10px}
 .ds-venom-warn .tw-icon{font-size:24px;line-height:1;flex-shrink:0}
@@ -170,14 +179,14 @@ button{font-family:inherit;cursor:pointer}input{font-family:inherit}
 .xlink-fungi{color:#795548}
 .xlink-fungi:hover{color:var(--gold);border-bottom-color:#795548}
 </style>
-<meta name="description" content="Free field guide to 255 species of reptiles, amphibians, mammals, and freshwater fish in Los Angeles County, California. Photos, venomous species warnings, conservation status, observation maps, and offline life list tracking.">
+<meta name="description" content="Free field guide to 252 species of reptiles, amphibians, mammals, and freshwater fish in Los Angeles County, California. Photos, venomous species warnings, conservation status, observation maps, and offline life list tracking.">
 <link rel="canonical" href="https://lawildlife.org">
 <meta property="og:type" content="website">
-<meta property="og:title" content="LA County Wildlife Field Guide — 255 Species">
-<meta property="og:description" content="Free field guide to 255 species of non-avian vertebrates in LA County. Photos, venomous ID, conservation status, observation maps, offline life list.">
+<meta property="og:title" content="LA County Wildlife Field Guide — 252 Species">
+<meta property="og:description" content="Free field guide to 252 species of non-avian vertebrates in LA County. Photos, venomous ID, conservation status, observation maps, offline life list.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="LA County Wildlife Field Guide — 255 Species">
-<meta name="twitter:description" content="Free field guide to 255 species of reptiles, amphibians, mammals & fish in LA County.">
+<meta name="twitter:title" content="LA County Wildlife Field Guide — 252 Species">
+<meta name="twitter:description" content="Free field guide to 252 species of reptiles, amphibians, mammals & fish in LA County.">
 <meta property="og:url" content="https://lawildlife.org">
 <meta property="og:image" content="https://lawildlife.org/icon-512.png">
 <meta property="og:image:width" content="512">
@@ -193,7 +202,7 @@ button{font-family:inherit;cursor:pointer}input{font-family:inherit}
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "LA County Wildlife Field Guide",
-  "description": "Free field guide to 255 species of non-avian vertebrates in Los Angeles County, California.",
+  "description": "Free field guide to 252 species of non-avian vertebrates in Los Angeles County, California.",
   "url": "https://lawildlife.org",
   "applicationCategory": "EducationalApplication",
   "operatingSystem": "Any",
@@ -202,7 +211,7 @@ button{font-family:inherit;cursor:pointer}input{font-family:inherit}
   "about": {
     "@type": "Thing",
     "name": "Non-Avian Vertebrates of Los Angeles County",
-    "description": "255 species of lizards, snakes, turtles, frogs, salamanders, mammals, bats, marine mammals, and freshwater fish found in Los Angeles County, California."
+    "description": "252 species of lizards, snakes, turtles, frogs, salamanders, mammals, bats, marine mammals, and freshwater fish found in Los Angeles County, California."
   },
   "spatialCoverage": {
     "@type": "Place",
@@ -218,7 +227,7 @@ button{font-family:inherit;cursor:pointer}input{font-family:inherit}
 <body>
 <div class="load-ovr" id="loadOvr"><div class="load-emoji">🦎</div><div class="load-text">LA County Wildlife</div><div class="load-sub">Loading species data…</div></div>
 <div class="notch-bg"></div>
-<header class="hdr"><h1>LA County Wildlife<br>Field Guide <span style="font-size:14px;font-weight:400;opacity:0.6">v3.003</span></h1><p class="sub" id="hSub">255 species across 9 taxa groups<br><span style="font-size:9px;opacity:0.5;font-weight:400">For informational purposes only — always maintain safe distance from wildlife</span></p></header>
+<header class="hdr"><h1>LA County Wildlife<br>Field Guide <span style="font-size:14px;font-weight:400;opacity:0.6">v3.004</span></h1><p class="sub" id="hSub">252 species across 9 taxa groups<br><span style="font-size:9px;opacity:0.5;font-weight:400">For informational purposes only — always maintain safe distance from wildlife</span></p></header>
 <nav class="tbar" id="tBar"></nav>
 <main class="cnt">
 <div class="wildlife-disclaimer">⚠️ Southern Pacific Rattlesnake is the ONLY dangerously venomous snake in LA County. Never handle wildlife.<span>Maintain safe distance from all wild animals. If bitten by a rattlesnake, call 911 immediately. This guide is for educational reference only.</span></div>
@@ -230,7 +239,7 @@ button{font-family:inherit;cursor:pointer}input{font-family:inherit}
 <span style="color:#3A9B68;font-weight:600">Common</span> >200 obs/year; regularly encountered in habitat. <span style="color:#BFA46E;font-weight:600">Uncommon</span> 20–200 obs/year; present but requires searching. <span style="color:#D4760A;font-weight:600">Rare</span> &lt;20 obs/year; range edge or genuinely scarce.
 <br><br><strong>Venomous badge:</strong> <span style="color:#C62828;font-weight:600">⚠ Venomous</span> Southern Pacific Rattlesnake only — the sole medically significant venomous species in LA County.
 <br><br><strong>Tile indicators:</strong> Status badges appear on all tiles except Common. <span style="color:#D4760A">✦</span> after the scientific name = introduced/non-native species. <span style="color:#C62828">⚠</span> = invasive species.
-<br><br><strong>Establishment:</strong> <span style="color:var(--forest);font-weight:600">● Native</span> (181 species) | <span style="color:#D4760A;font-weight:600">✦ Introduced</span> (71 species) | <span style="color:#C62828;font-weight:600">⚠ Invasive</span> (3 species — American Bullfrog, Feral Pig, Argentine Tegu).
+<br><br><strong>Establishment:</strong> <span style="color:var(--forest);font-weight:600">● Native</span> (178 species) | <span style="color:#D4760A;font-weight:600">✦ Introduced</span> (71 species) | <span style="color:#C62828;font-weight:600">⚠ Invasive</span> (3 species — American Bullfrog, Feral Pig, Argentine Tegu).
 </div>
 <div class="ti" id="tInfo"></div>
 <div id="spCont"></div>
@@ -316,6 +325,7 @@ const NAME_ALIASES={
 "Scapanus latimanus":"Scapanus occultus",
 "Hypsiglena ochrorhynchus":"Hypsiglena ochrorhyncha",
 "Anniella spp.":"Anniella stebbinsi",
+"Pseudacris regilla":"Pseudacris hypochondriaca",
 };
 
 let pq=[],pf=false;
@@ -443,7 +453,7 @@ document.getElementById('famToggle2').addEventListener('click',toggle);const sb=
 el.querySelectorAll('.fs').forEach(b=>b.addEventListener('click',()=>{const f=b.dataset.fam;state.familyFilter=state.familyFilter===f?null:f;render();}));}
 
 function rSp(){const cont=document.getElementById('spCont');
-let list=SPECIES_DATA[state.activeTaxon]||[];
+let list=(SPECIES_DATA[state.activeTaxon]||[]).filter(s=>!s.ssp);
 if(state.statusFilter)list=list.filter(s=>s.st===state.statusFilter);
 if(state.familyFilter)list=list.filter(s=>s.fam===state.familyFilter);
 if(state.observedFilter==='observed')list=list.filter(s=>isO(s));
@@ -505,8 +515,8 @@ const PLANT_LINKS={
 'fan palm':'Washingtonia+fimbriata','fan palms':'Washingtonia+fimbriata','palm tree':'Washingtonia+fimbriata',
 'Monterey pine':'Pinus+radiata',
 'Douglas-fir':'Pseudotsuga+menziesii','douglas-fir':'Pseudotsuga+menziesii',
-'chaparral':'Adenostoma+fasciculatum','Chaparral':'Adenostoma+fasciculatum',
-'sage scrub':'Artemisia+californica','coastal sage scrub':'Artemisia+californica',
+'chamise':'Adenostoma+fasciculatum','Chamise':'Adenostoma+fasciculatum',
+'California sagebrush':'Artemisia+californica','california sagebrush':'Artemisia+californica',
 'walnut':'Juglans+californica',
 'cholla':'Cylindropuntia','Cholla':'Cylindropuntia',
 'ceanothus':'Ceanothus','Ceanothus':'Ceanothus',
@@ -546,6 +556,19 @@ if(!sp.call)return '';
 return `<div class="ds-call"><div class="ds-call-label">🔊 Call / Vocalization</div><div class="ds-call-desc">${sp.call}</div>${sp.callUrl?`<a href="${sp.callUrl}" target="_blank" rel="noopener" class="ds-call-link">▶ Listen to call recording</a>`:''}</div>`;
 }
 
+function rSSP(sp){
+const bi=' '.concat(sp.sn.split(' ')[0],' ',sp.sn.split(' ')[1]||'');
+const subs=(SPECIES_DATA[state.activeTaxon]||[]).filter(s=>s.ssp&&s.sn!==sp.sn&&s.sn.startsWith(bi.trim()));
+if(!subs.length)return '';
+let h='<div class="ds-ssp-section"><div class="ds-ssp-title">Subspecies & Variants</div>';
+for(const sub of subs){
+h+=`<div class="ds-ssp-entry"><div class="ds-ssp-name">${sub.cn} <span class="ds-ssp-sn">${sub.sn}</span></div>`;
+if(sub.desc)h+=`<div class="ds-ssp-desc">${linkText(sub.desc)}</div>`;
+if(sub.hp)h+=`<div class="ds-ssp-hp">${linkText(sub.hp)}</div>`;
+h+=`</div>`;}
+h+=`</div>`;
+return h;}
+
 function rFM(sp){if(!sp.fm)return '';let h='';const linkFields=new Set(['Habitat','Diet','Urban','Conservation']);for(const[l,v]of Object.entries(sp.fm)){const val=linkFields.has(l)?linkText(v):v;h+=`<div class="ds-fmr"><span class="ds-fml">${l}</span><span class="ds-fmv">${val}</span></div>`;}return h;}
 
 function openDS(sp){
@@ -576,6 +599,7 @@ ${rElev(sp)}${rPhen(sp)}${rHP(sp)}${rCall(sp)}
 <div class="ds-map" id="dsMap"></div>
 </div>
 <div class="ds-fms">${rFM(sp)}</div>
+${rSSP(sp)}
 <div class="ds-acts"><a class="ds-btn ds-btn-inat" href="${mapUrl}" target="_blank" rel="noopener noreferrer">View on iNaturalist →</a>${state.inatUsername&&tid?`<a class="ds-btn ds-btn-myobs" href="https://www.inaturalist.org/observations?user_id=${encodeURIComponent(state.inatUsername)}&taxon_id=${tid}&verifiable=any" target="_blank" rel="noopener noreferrer">My Observations →</a>`:''}</div>
 ${ca&&ca.attr?`<div class="ds-attr">${eH(ca.attr)}</div>`:''}
 </div></div></div>`;
@@ -628,7 +652,7 @@ document.getElementById('sInp').value=state.searchQuery;rSp();}
 
 /* v3: Async species data loader with CacheStorage fallback */
 const SD_URL='species-data.json';
-const SW_CACHE='la-fauna-guide-v3.003';
+const SW_CACHE='la-fauna-guide-v3.004';
 
 async function loadSpeciesData(){
 try{

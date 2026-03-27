@@ -1,73 +1,113 @@
-# LA County Non-Avian Vertebrates Field Guide
+# LA County Wildlife Field Guide
 
-**206 species** of reptiles, amphibians, mammals, and freshwater fish in Los Angeles County, California.
-
-🦎 **19 lizards** · 🐍 **28 snakes** · 🐢 **5 turtles** · 🐸 **11 frogs & toads** · 🔥 **7 salamanders** · 🦁 **16 large mammals** · 🐿️ **34 small mammals** · 🦇 **19 bats** · 🦭 **16 marine mammals** · 🐟 **29 freshwater fish** · 🐊 **10 introduced herps** + 12 subspecies
-
-**Live at [lawildlife.org](https://la-fauna.org)**
+**lawildlife.org** — Free, offline-capable field guide to 252 species of reptiles, amphibians, mammals, and freshwater/estuarine fish in Los Angeles County, California.
 
 ## Features
 
-- **Single-file PWA** — works offline after first load
-- **iNaturalist integration** — photos, observation maps, life list tracking
-- **Venomous species warnings** — clear rattlesnake identification with emergency procedures
-- **Conservation status** — FE, FT, SSC badges for 27 listed species
-- **Satellite observation maps** — ESRI imagery + iNaturalist occurrence overlay
-- **Activity period badges** — diurnal/nocturnal/crepuscular/cathemeral
-- **Family-level browsing** — collapsible family chips with species counts
-- **Cross-taxa search** — find species across all 11 groups
-- **100% ecological association (hp) coverage** — every species has ecology notes
-- **100% look-alike (vs) notes** for all venomous species
+- **252 species** across 9 taxa groups (245 full entries + 7 subspecies)
+- **Live iNaturalist integration** — observation heatmaps, personal life list tracking
+- **Offline PWA** — works without internet after first load
+- **Cross-guide ecosystem** — linked to [la-flora.org](https://la-flora.org), [lafungi.org](https://lafungi.org), [labugs.org](https://labugs.org)
+- **Venomous species warnings** — 6 rattlesnake species with emergency protocols
+- **Conservation status badges** — ESA/CESA/SSC listings for 30 species
+- **Frog call audio** — 14 species with call descriptions and CaliforniaHerps.com recording links
+- **Establishment filter** — native (178), introduced (71), invasive (3)
+- **Smart search** — cross-group search across all taxa with preserved query
+
+## Taxa Groups
+
+| Tab | Emoji | Species | Coverage |
+|-----|-------|---------|----------|
+| Lizards | 🦎 | 37+3 ssp | Native + introduced (Green Anole, Five-lined Skink, etc.) |
+| Snakes | 🐍 | 35 | Including Mojave Rattlesnake (neurotoxic) |
+| Turtles | 🐢 | 15 | 2 native + 13 pet-release species |
+| Frogs & Toads | 🐸 | 14 | Including Rana muscosa (FE), Coquí, Cuban Tree Frog |
+| Salamanders | 🔥 | 7 | All native |
+| Mammals | 🐾 | 55+2 ssp | Land mammals (18 families merged) |
+| Bats | 🦇 | 19+1 ssp | All native |
+| Marine Mammals | 🦭 | 19 | Whales, dolphins, pinnipeds |
+| Fish | 🐟 | 43+1 ssp | Freshwater + estuarine (Grunion, Topsmelt, Killifish) |
 
 ## Architecture
 
-Single `index.html` with all CSS, JS, and species data inlined. No build step, no framework, no dependencies (except Leaflet for maps and Google Fonts).
+Two-file PWA with service worker caching:
 
-- **Photos**: fetched from iNat `/taxa/autocomplete`, cached in IndexedDB
-- **Life list**: iNat `species_counts` API with `place_id=962` (LA County)
-- **Maps**: ESRI satellite tiles + iNat observation overlay
-- **Fonts**: EB Garamond (serif) + DM Sans (sans-serif)
-- **Branding**: dark forest green `#1A3C35`, muted gold `#BFA46E`, warm cream `#FAF8F4`
+```
+index.html          69 KB   App shell (UI, rendering, iNat API integration)
+species-data.json  293 KB   Species data (all 252 entries)
+sw.js                1 KB   Network-first service worker
+manifest.json      586 B    PWA manifest
+```
 
-## Key Species
+### Key Technical Patterns
 
-| Category | Notable Species |
-|---|---|
-| **Venomous** | Southern Pacific Rattlesnake, Red Diamond Rattlesnake, Sidewinder, Speckled Rattlesnake |
-| **Endangered (FE)** | Arroyo Toad, Unarmored Threespine Stickleback, Southern Steelhead, Desert Tortoise (FT) |
-| **Iconic LA** | Mountain Lion (P-22 legacy), Coyote, Island Fox, California Newt |
-| **Conservation** | Western Pond Turtle, Coast Horned Lizard, Two-striped Gartersnake, Pallid Bat |
-| **Invasive threats** | American Bullfrog, Red-eared Slider, Brown Anole, Largemouth Bass |
-| **Marine** | Gray Whale, Blue Whale, Humpback, Orca, Sea Otter |
+- **Async data loader** with CacheStorage fallback and branded loading overlay
+- **IndexedDB photo cache** (`vertGuidePhotos`) — persists iNat taxon photos offline
+- **Cross-guide deep links** — `?species=Scientific+name` URLs with NAME_ALIASES for reclassified taxa
+- **linkText() placeholder system** — prevents double-linking when cross-referencing flora/fungi guides
+- **Subspecies folding** — ssp entries render inside parent detail sheets, not as separate cards
+- **Frog call renderer** — `rCall(sp)` with external audio links
+- **Dynamic venomous warnings** — per-species venom description from fm.Venom field
 
-## Sources
+### Species Data Schema
 
-- **CaliforniaHerps.com** (Gary Nafis) — definitive CA herps resource
-- **Stebbins & McGinnis**, *Field Guide to Western Reptiles and Amphibians* (4th ed., 2018)
-- **Jameson & Peeters**, *Mammals of California* (revised ed., 2004)
-- **Moyle**, *Inland Fishes of California* (revised ed., 2002)
-- **CDFW** Species of Special Concern lists
-- **RASCals** / NHMLAC community science project
-- **SCAS Bulletin** — Annotated Checklist of Terrestrial Mammals of LA County (2022)
-- **NPS** Santa Monica Mountains NRA wildlife monitoring
-- **iNaturalist** (inaturalist.org) — photos and occurrence data
+```javascript
+{
+  id: "vert_0001",        // Unique card ID
+  cn: "Common Name",
+  sn: "Genus species",    // Binomial or trinomial
+  fam: "Family",
+  st: "common",           // common|uncommon|rare|endangered
+  desc: "Description...", // 123+ chars
+  hp: "Ecology note...",  // 83+ chars, unique per species
+  elev: "coast,low,foot", // Elevation bands
+  mo: [3,4,5,...],        // Active months
+  pk: [5,6,7,8],          // Peak months
+  dur: "diurnal",         // diurnal|nocturnal|crepuscular|cathemeral
+  est: "native",          // native|introduced|invasive
+  fm: {                   // Field marks (min 4 entries)
+    Size, Color, Habitat, Behavior, Diet, vs, Urban, Conservation, Venom
+  },
+  // Optional:
+  ssp: true,              // Subspecies — renders inside parent card, not as own card
+  venomous: true,         // Rattlesnakes only
+  conservation: "FE",     // FE|FT|SE|ST|SSC
+  call: "description",    // Frog vocalization
+  callUrl: "https://...", // External audio link
+}
+```
 
-## Deploy
+## Deployment
 
-Netlify drag-and-drop: zip `index.html`, `sw.js`, `manifest.json`, `_headers`, `_redirects`, and `icons/` directory.
+Drag-and-drop to Netlify:
+1. Upload `index.html`, `species-data.json`, `sw.js`, `manifest.json`, and all icon files
+2. Set custom domain to `lawildlife.org`
+3. Enable HTTPS
 
-## Part of the LA County Field Guide Suite
+## Data Sources
 
-- 🦋 [LA County Invertebrate Guide](https://labugs.org) — 1,016 species
-- 🌿 [LA County Plant Guide](https://la-flora.org) — 730 species
-- 🍄 [LA County Fungi Guide](https://la-fungi.org) — 567 species
-- 🦎 **LA County Wildlife Guide** (this guide) — 206 species
+CaliforniaHerps.com (Gary Nafis); Stebbins & McGinnis *Western Reptiles & Amphibians*; Hansen & Shedd *California Amphibians and Reptiles* (Princeton); Jameson & Peeters *Mammals of California*; Moyle *Inland Fishes of California*; CDFW Species of Special Concern Lists; NHM RASCals project; NPS Santa Monica Mountains; iNaturalist; USFWS ESA Recovery Plans; Bat Conservation International.
+
+## Related Guides
+
+- [labugs.org](https://labugs.org) — LA County Invertebrate Guide (3,438 species)
+- [la-flora.org](https://la-flora.org) — LA County Plant Guide
+- [lafungi.org](https://lafungi.org) — LA County Fungi Guide (578 species)
+
+## Tools
+
+- `gap-finder-fauna.html` — iNaturalist audit tool with embedded species lookup. Queries Reptilia, Amphibia, Mammalia, and Actinopterygii to find species with RG observations in LA County not yet in the guide.
 
 ## License
 
-GPL v3 — see [LICENSE](LICENSE)
+GPL v3. Species data compiled from public sources. iNaturalist photos are CC-licensed and attributed per-image. For informational purposes only — always maintain safe distance from wildlife.
 
-⚠️ **DISCLAIMER**: For informational purposes only. Not a substitute for expert wildlife identification. If bitten by a rattlesnake, call 911 immediately. Never handle wild animals.
+## Version History
 
----
-*Field guide by Rhys Marsh*
+| Version | Species | Changes |
+|---------|---------|---------|
+| v2.004 | 206 | Single-file architecture, 11 taxa groups |
+| v3.001 | 203 | Two-file split, cross-links, tab merge, est field |
+| v3.002 | 203 | Content enrichment, Urban notes, gap finder |
+| v3.003 | 255→252 | +49 species from gap audit, 9 synonym updates, frog calls, id fix |
+| v3.004 | 252 | Subspecies folding (plants-guide pattern), removed synonyms/redundant entries, fixed chaparral link, dynamic venomous warnings |

@@ -1,14 +1,14 @@
-# Continuation Prompt — Fauna Guide Updates (v3.003)
+# Continuation Prompt — Fauna Guide Updates (v3.004)
 
 ## REPLACEMENT: Guide 4 Section
 
 ## Guide 4: LA County Wildlife Field Guide (lawildlife.org)
 
-**Status**: v3.003 — deploy-ready, 53/53 pre-publish checks passed
+**Status**: v3.004 — deploy-ready, 53/53 pre-publish checks passed
 **Species**: 255 across 9 taxa groups (247 unique binomials + 9 subspecies/cross-refs)
 **Architecture**: Two-file (index.html 69 KB + species-data.json 293 KB + sw.js 1 KB)
 **IDB name**: `vertGuidePhotos`
-**SW cache**: `la-fauna-guide-v3.003`
+**SW cache**: `la-fauna-guide-v3.004`
 **GitHub**: https://github.com/rhysmarsh/LA-vertebrates
 **License**: GPL v3 + disclaimer
 **iNat taxon IDs**: 26036 (Reptilia), 20978 (Amphibia), 40151 (Mammalia), 47178 (Actinopterygii) | place_id: 962
@@ -22,9 +22,9 @@ FISH:       🐟 Freshwater & Estuarine Fish (44)
 ```
 
 ### Key Metrics
-- **255 species** across 9 tabs, 78 unique families
+- **252 species** across 9 tabs, 78 unique families
 - **Establishment**: 182 native, 71 introduced, 3 invasive — per-species `est` field
-- **100% unique hp ecological notes** across all 255 species (0 duplicates)
+- **100% unique hp ecological notes** across all 252 species (0 duplicates)
 - **fm.vs**: 255/255 (100%), fm.Habitat: 255/255 (100%), fm.Urban: 127/255 (50%)
 - **fm fields**: min 4, mean 6.3; desc: min 123 chars, mean 199; hp: min 83 chars
 - **Cross-links**: 34 terms (28 PLANT_LINKS → la-flora.org, 6 FUNGI_LINKS → lafungi.org)
@@ -33,9 +33,9 @@ FISH:       🐟 Freshwater & Estuarine Fish (44)
 - **30 conservation entries** (ESA/CESA/SSC)
 - **14 NAME_ALIASES** for reclassified taxa
 - **Frog call audio**: rCall() renderer with purple-styled ▶ Listen links
-- **Gap finder**: gap-finder-fauna.html with 247 embedded binomials (v3.003)
+- **Gap finder**: gap-finder-fauna.html with 247 embedded binomials (v3.004)
 
-### v3.003 Migration History (March 2026)
+### v3.004 Migration History (March 2026)
 
 **v3.001 — Structural migration** (from v2.004 single-file 289 KB):
 - Two-file architecture (index.html + species-data.json)
@@ -55,7 +55,7 @@ FISH:       🐟 Freshwater & Estuarine Fish (44)
 - 11 thin species enriched (fm min raised 2→4, desc min raised 55→123)
 - Gap finder rebuilt with 194 embedded binomials (no fetch dependency)
 
-**v3.003 — Species expansion + quality pass:**
+**v3.004 — Species expansion + quality pass:**
 - 49 new species added from gap finder audit results
 - 9 taxonomic synonyms updated to current iNat binomials
 - 14 frog/toad call descriptions + CaliforniaHerps audio links
@@ -64,7 +64,7 @@ FISH:       🐟 Freshwater & Estuarine Fish (44)
 - Gap finder updated with 247 embedded binomials
 - 53/53 pre-publish checks passed
 
-### Species Added in v3.003
+### Species Added in v3.004
 
 **Critical additions (venomous/endangered):**
 - Mojave Rattlesnake (*Crotalus scutulatus*, 316 obs, VENOMOUS neurotoxic+hemotoxic)
@@ -100,7 +100,7 @@ FISH:       🐟 Freshwater & Estuarine Fish (44)
 
 **Snakes (3):** Western Black-headed Snake (71), Desert Nightsnake (8), plus Brahminy Blindsnake above
 
-### Taxonomic Synonym Updates (v3.003)
+### Taxonomic Synonym Updates (v3.004)
 
 | Old binomial (in v3.002) | New binomial (current iNat) | Type |
 |---|---|---|
@@ -115,7 +115,7 @@ FISH:       🐟 Freshwater & Estuarine Fish (44)
 | Scapanus latimanus | Scapanus occultus | Species split |
 All old binomials added to NAME_ALIASES for backward-compatible deep links.
 
-### Gap Finder Audit Results (v3.003)
+### Gap Finder Audit Results (v3.004)
 
 Executed gap-finder-fauna.html against live iNat API. Results: 158 raw gaps triaged to:
 - 84 marine fish (out of scope — pending marine guide)
@@ -145,7 +145,7 @@ Executed gap-finder-fauna.html against live iNat API. Results: 158 raw gaps tria
 **Inbound**: findAndOpenSpecies() + checkDeepLink() with 14 NAME_ALIASES
 **Cross-guide footer nav**: Flora / Fungi / Bugs / Wildlife with active state
 
-### Frog Call Audio (v3.003)
+### Frog Call Audio (v3.004)
 
 14 species with `call` field (description) and `callUrl` (CaliforniaHerps.com link):
 - Baja California Treefrog (RIBBIT — the Hollywood frog), California Treefrog (duck quacking), Arroyo Toad, Red-spotted Toad, Western Toad, Western Spadefoot, American Bullfrog (JUG-O-RUM), African Clawed Frog (underwater), Common Coquí (ko-KEE!), Rio Grande Leopard Frog
@@ -175,6 +175,54 @@ Rendered by `rCall(sp)` function with purple styling (`.ds-call`) and ▶ Listen
 - apple-touch-icon.png, favicon.ico
 - Source: icon-source.svg — gold lizard silhouette on forest green gradient
 
+
+### v3.004 — Subspecies folding + quality fixes
+
+**Subspecies handling (Plants guide pattern):**
+- `ssp=true` entries filtered from card grid — no separate cards for subspecies
+- `rSSP(sp)` function renders subspecies inside parent species detail sheet
+- Gold-bordered expandable section with subspecies name, description, and hp note
+- CSS: `.ds-ssp-section` with gold left border on cream background
+
+**Removed redundant entries (255→252):**
+- Pacific Chorus Frog (P. regilla) — taxonomic synonym, not a subspecies. Added to NAME_ALIASES → P. hypochondriaca
+- Blainville's Horned Lizard — same binomial as Coast Horned Lizard, merged content into parent
+- Southern California Rattlesnake (C. oreganus nominal) — parent is C. o. helleri, merged
+- Anniella spp. aggregate — resolved to A. stebbinsi (removed in v3.003)
+
+**Bug fixes:**
+- All 53 new species assigned `id` fields (vert_0210–vert_0262) — cards now clickable
+- Venomous warning now dynamic per species (reads sp.cn + sp.fm.Venom)
+- Chaparral/sage scrub removed from PLANT_LINKS (habitat types, not species); replaced with chamise/California sagebrush
+- Unarmored Threespine Stickleback flagged as ssp=true (G. a. williamsoni)
+- P. regilla added to NAME_ALIASES for backward-compatible deep links
+
+**Remaining ssp entries (7):**
+- San Diego Banded Gecko (C. v. abbotti) → Western Banded Gecko
+- Coastal Western Whiptail (A. t. multiscutata) → Western Whiptail
+- Coastal Whiptail (A. t. stejnegeri) → Western Whiptail
+- San Diego Desert Woodrat (N. l. intermedia) → Desert Woodrat
+- Island Spotted Skunk (S. g. amphiala) → Spotted Skunk
+- Unarmored Threespine Stickleback (G. a. williamsoni) → Threespine Stickleback
+- Southern Steelhead (O. m. irideus) → Rainbow Trout
+
+### Build Lesson #34: Subspecies Folding (v3.004)
+Plants guide pattern for subspecies handling:
+1. `ssp=true` entries are stored in species-data.json but filtered from card grid: `list.filter(s=>!s.ssp)`
+2. `rSSP(sp)` function queries SPECIES_DATA for ssp entries sharing the parent's binomial prefix
+3. Subspecies render as expandable sections inside the parent's detail sheet
+4. Counts exclude ssp: `sC()` and `lC()` already filtered `!sp.ssp`
+5. Taxonomic synonyms (same genus, different epithet) should be NAME_ALIASES, not ssp entries
+6. Every ssp entry MUST have a parent with matching binomial prefix in the same taxa group
+
+### Build Lesson #35: Cross-Link Scope (v3.004)
+PLANT_LINKS should only contain actual plant species names, not habitat-type descriptors:
+- ✅ 'chamise' → Adenostoma fasciculatum (specific plant)
+- ✅ 'coast live oak' → Quercus agrifolia (specific plant)
+- ❌ 'chaparral' → Adenostoma fasciculatum (habitat with dozens of species)
+- ❌ 'sage scrub' → Artemisia californica (habitat with dozens of species)
+Habitat types link misleadingly to a single species card. Remove them or use the dominant species name instead.
+
 ### Remaining Work
 1. **Reciprocal WILDLIFE_LINKS in flora/fungi guides** — needs those source files
 2. **Build Lesson #23 backport** to labugs.org, la-flora.org, lafungi.org
@@ -198,14 +246,14 @@ Cross-guide link rendering must handle overlapping match terms. Uses:
 ### Build Lesson #31: Gap Finder Embedded Species (v3.002)
 Gap finder must work standalone without co-located species-data.json. Solution: embed guide species binomials as `GUIDE_LOOKUP_DEFAULT` constant (~6 KB for 247 binomials). Optional upload button overrides embedded data for freshness.
 
-### Build Lesson #32: Taxonomic Synonym Management (v3.003)
+### Build Lesson #32: Taxonomic Synonym Management (v3.004)
 iNat taxonomy updates continuously. Pattern for keeping guide current:
 1. Run gap finder — synonyms appear as "gaps" because iNat uses new binomial, guide uses old
 2. Update `sn` field in species-data.json to new binomial
 3. Add old binomial → new binomial entry to NAME_ALIASES (preserves inbound deep links)
 4. For species SPLITS: update existing entry to the LA-relevant taxon; note the split in hp field
 
-### Build Lesson #33: Estuarine Fish Scope (v3.003)
+### Build Lesson #33: Estuarine Fish Scope (v3.004)
 Drawing the line between freshwater/estuarine (IN) and marine (OUT):
 - IN: Species that regularly use estuarine, lagoon, or coastal creek habitat (Grunion, Topsmelt, Killifish, Staghorn Sculpin)
 - IN: True freshwater species including introduced aquarium fish (Cichlids, Livebearers, Weatherfish)
