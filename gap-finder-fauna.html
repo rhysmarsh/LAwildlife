@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LA Fauna Gap Finder — iNaturalist Audit Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--forest:#1A3C35;--forest-deep:#0F2F2B;--gold:#BFA46E;--cream:#FAF8F4;--green-ok:#3A9B68;--red:#C62828;--fd:'EB Garamond','Georgia',serif;--fb:'DM Sans','Helvetica Neue',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--cream);color:#333;-webkit-font-smoothing:antialiased}
+.hdr{background:linear-gradient(160deg,var(--forest),var(--forest-deep));padding:24px 20px 18px;color:#fff}
+.hdr h1{font-family:var(--fd);font-size:22px;font-weight:700;line-height:1.2}
+.hdr .sub{font-size:12px;margin-top:4px;opacity:0.55}
+.wrap{max-width:900px;margin:0 auto;padding:16px}
+.card{background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:16px;margin-bottom:14px}
+.card h2{font-family:var(--fd);font-size:18px;color:var(--forest);margin-bottom:8px}
+.card p{font-size:12px;color:#666;line-height:1.5;margin-bottom:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;border:none;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.btn-primary{background:var(--forest);color:#fff}.btn-primary:hover{background:var(--forest-deep)}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed}
+.btn-secondary{background:rgba(191,164,110,0.15);color:var(--gold);border:1px solid rgba(191,164,110,0.3)}
+.btn-secondary:hover{background:rgba(191,164,110,0.25)}
+.progress{margin:12px 0}
+.pbar{height:8px;border-radius:4px;background:#e8e0d4;overflow:hidden;margin-top:4px}
+.pfill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green-ok),var(--gold));transition:width 0.3s}
+.ptext{font-size:11px;color:#888}
+.log{font-family:'DM Sans',monospace;font-size:11px;color:#666;max-height:200px;overflow-y:auto;background:#f8f6f2;border-radius:6px;padding:8px;margin-top:8px;line-height:1.6}
+.log .err{color:var(--red)}.log .ok{color:var(--green-ok)}.log .warn{color:#D4760A}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+th{text-align:left;padding:6px 8px;background:var(--forest);color:#fff;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;position:sticky;top:0}
+td{padding:5px 8px;border-bottom:1px solid #f0ebe3;vertical-align:top}
+tr:hover td{background:#f8f6f2}
+.sn{font-style:italic;color:#666;font-size:11px}
+.badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-left:4px}
+.b-native{background:#E8F5E9;color:#2E7D32}.b-intro{background:#FFF3E0;color:#D4760A}.b-inv{background:#FFEBEE;color:#C62828}
+.b-t1{background:var(--forest);color:#fff}.b-t2{background:var(--gold);color:#fff}.b-t3{background:#e8e0d4;color:#666}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:12px 0}
+.stat{background:#f8f6f2;border-radius:8px;padding:10px 12px;text-align:center}
+.stat .n{font-size:24px;font-weight:700;color:var(--forest);font-family:var(--fd)}
+.stat .l{font-size:10px;color:#888;margin-top:2px}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.fchip{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;border:1px solid #ddd;background:#f5f5f5;color:#666;cursor:pointer;transition:all 0.15s}
+.fchip.active{background:var(--forest);color:#fff;border-color:var(--forest)}
+.tbl-wrap{max-height:500px;overflow-y:auto;border:1px solid #e8e0d4;border-radius:8px}
+.hidden{display:none}
+.export-area{margin-top:12px}
+textarea{width:100%;height:120px;font-family:monospace;font-size:10px;border:1px solid #e8e0d4;border-radius:6px;padding:8px;resize:vertical}
+</style>
+</head>
+<body>
+<header class="hdr">
+<h1>🦎 LA Fauna Gap Finder</h1>
+<p class="sub">iNaturalist audit tool · Queries Reptilia + Amphibia + Mammalia + Actinopterygii · place_id=962</p>
+</header>
+
+<div class="wrap">
+<div class="card">
+<h2>Architecture</h2>
+<p>Four broad taxon queries (Build Lesson #27 pattern — no <code>iconic_taxon_name</code> filter). 
+Compares iNat RG species_counts against the guide's 256 species. Batch family lookup via <code>/v1/taxa/id1,id2,...</code> (30 per batch). 
+Two-pass native detection (all species + <code>&amp;native=true</code>). Excludes marine fish, pelagic birds, and species under 2 RG observations.</p>
+<p><strong>Queries:</strong> Reptilia (26036) · Amphibia (20978) · Mammalia (40151) · Actinopterygii (47178) — all with place_id=962, quality_grade=research</p>
+</div>
+
+<div class="card">
+<h2>Run Audit</h2>
+<p>This will make ~20-40 API calls to iNaturalist (rate-limited to 1/sec). Takes 1-2 minutes.</p>
+<div style="margin-bottom:10px;padding:8px 12px;background:#f8f6f2;border-radius:6px;font-size:11px;color:#666">
+<strong>Guide data:</strong> <span id="guideStatus">247 species embedded (v3.003 default)</span><br>
+<label style="margin-top:4px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--forest);font-weight:600">
+📂 Upload updated species-data.json <input type="file" accept=".json" id="jsonUpload" style="display:none" onchange="handleUpload(event)">
+</label>
+</div>
+<button class="btn btn-primary" id="runBtn" onclick="runAudit()">🔍 Run Gap Audit</button>
+<div class="progress hidden" id="progressWrap">
+<div class="ptext" id="progressText">Starting...</div>
+<div class="pbar"><div class="pfill" id="progressFill" style="width:0%"></div></div>
+</div>
+<div class="log hidden" id="logBox"></div>
+</div>
+
+<div class="card hidden" id="resultsCard">
+<h2>Results</h2>
+<div class="summary" id="summaryStats"></div>
+<div class="filters" id="filterBar"></div>
+<div class="tbl-wrap" id="tableWrap"></div>
+<div class="export-area">
+<button class="btn btn-secondary" onclick="exportJSON()">📋 Export JSON</button>
+<button class="btn btn-secondary" onclick="exportCSV()">📊 Export CSV</button>
+<button class="btn btn-secondary" onclick="exportPrompt()">📝 Export Enrichment Prompt</button>
+<textarea class="hidden" id="exportArea" readonly></textarea>
+</div>
+</div>
+</div>
+
+<script>
+/* ─── Guide species list (extracted from species-data.json) ─── */
+/* Embedded guide species lookup (v3.003 — 194 unique binomials) */
+const GUIDE_LOOKUP_DEFAULT={"Elgaria multicarinata":"lizards","Anniella spp.":"lizards","Anniella pulchra":"lizards","Anniella stebbinsi":"lizards","Crotaphytus bicinctores":"lizards","Gambelia wislizenii":"lizards","Coleonyx variegatus":"lizards","Sauromalus ater":"lizards","Dipsosaurus dorsalis":"lizards","Phrynosoma blainvillii":"lizards","Phrynosoma platyrhinos":"lizards","Sceloporus magister":"lizards","Sceloporus orcutti":"lizards","Urosaurus graciosus":"lizards","Uta stansburiana":"lizards","Sceloporus vandenburgianus":"lizards","Sceloporus occidentalis":"lizards","Callisaurus draconoides":"lizards","Plestiodon gilberti":"lizards","Plestiodon skiltonianus":"lizards","Aspidoscelis tigris":"lizards","Aspidoscelis hyperythrus":"lizards","Xantusia vigilis":"lizards","Xantusia henshawi":"lizards","Xantusia riversiana":"lizards","Chamaeleo calyptratus":"lizards","Anolis sagrei":"lizards","Anolis carolinensis":"lizards","Hemidactylus garnotii":"lizards","Hemidactylus turcicus":"lizards","Hemidactylus frenatus":"lizards","Podarcis muralis":"lizards","Podarcis siculus":"lizards","Urosaurus ornatus":"lizards","Tarentola mauritanica":"lizards","Trachylepis quinquetaeniata":"lizards","Salvator merianae":"lizards","Lichanura orcutti":"snakes","Charina umbratica":"snakes","Lampropeltis californiae":"snakes","Hypsiglena ochrorhyncha":"snakes","Thamnophis sirtalis":"snakes","Lampropeltis multifasciata":"snakes","Lampropeltis getula":"snakes","Contia tenuis":"snakes","Hypsiglena chlorophaea":"snakes","Arizona elegans":"snakes","Sonora semiannulata":"snakes","Rhinocheilus lecontei":"snakes","Trimorphodon lyrophanes":"snakes","Sonora occipitalis":"snakes","Thamnophis elegans":"snakes","Masticophis flagellum":"snakes","Diadophis punctatus":"snakes","Pituophis catenifer":"snakes","Tantilla hobartsmithi":"snakes","Phyllorhynchus decurtatus":"snakes","Masticophis lateralis":"snakes","Thamnophis hammondii":"snakes","Tantilla planiceps":"snakes","Salvadora hexalepis":"snakes","Coluber constrictor":"snakes","Rena humilis":"snakes","Crotalus scutulatus":"snakes","Crotalus ruber":"snakes","Crotalus cerastes":"snakes","Crotalus oreganus":"snakes","Crotalus pyrrhus":"snakes","Nerodia fasciata":"snakes","Pantherophis guttatus":"snakes","Python regius":"snakes","Indotyphlops braminus":"snakes","Actinemys pallida":"turtles","Gopherus agassizii":"turtles","Chelydra serpentina":"turtles","Malaclemys terrapin":"turtles","Graptemys pseudogeographica":"turtles","Pseudemys nelsoni":"turtles","Graptemys ouachitensis":"turtles","Chrysemys picta":"turtles","Pseudemys peninsularis":"turtles","Trachemys scripta":"turtles","Pseudemys concinna":"turtles","Terrapene triunguis":"turtles","Sternotherus odoratus":"turtles","Centrochelys sulcata":"turtles","Apalone ferox":"turtles","Apalone spinifera":"turtles","Anaxyrus californicus":"frogs","Anaxyrus punctatus":"frogs","Anaxyrus boreas":"frogs","Pseudacris hypochondriaca":"frogs","Pseudacris cadaverina":"frogs","Pseudacris regilla":"frogs","Batrachoseps nigriventris":"frogs","Rana draytonii":"frogs","Lithobates pipiens":"frogs","Rana muscosa":"frogs","Spea hammondii":"frogs","Eleutherodactylus coqui":"frogs","Osteopilus septentrionalis":"frogs","Xenopus laevis":"frogs","Lithobates catesbeianus":"frogs","Lithobates berlandieri":"frogs","Aneides lugubris":"salamanders","Batrachoseps pacificus":"salamanders","Ensatina eschscholtzii":"salamanders","Batrachoseps major":"salamanders","Batrachoseps robustus":"salamanders","Batrachoseps gabrieli":"salamanders","Taricha torosa":"salamanders","Antilocapra americana":"mammals","Ovis canadensis":"mammals","Canis latrans":"mammals","Urocyon cinereoargenteus":"mammals","Urocyon littoralis":"mammals","Vulpes macrotis":"mammals","Odocoileus hemionus":"mammals","Neotoma macrotis":"mammals","Peromyscus eremicus":"mammals","Peromyscus californicus":"mammals","Microtus californicus":"mammals","Neotoma lepida":"mammals","Neotoma fuscipes":"mammals","Peromyscus gambelii":"mammals","Reithrodontomys megalotis":"mammals","Lynx rufus":"mammals","Puma concolor":"mammals","Megascapheus bottae":"mammals","Dipodomys agilis":"mammals","Chaetodipus californicus":"mammals","Dipodomys deserti":"mammals","Perognathus longimembris":"mammals","Dipodomys merriami":"mammals","Chaetodipus fallax":"mammals","Perognathus alticolus":"mammals","Lepus californicus":"mammals","Sylvilagus bachmani":"mammals","Sylvilagus audubonii":"mammals","Spilogale gracilis":"mammals","Mephitis mephitis":"mammals","Taxidea taxus":"mammals","Neogale frenata":"mammals","Procyon lotor":"mammals","Bassariscus astutus":"mammals","Otospermophilus beecheyi":"mammals","Neotamias speciosus":"mammals","Neotamias merriami":"mammals","Xerospermophilus mohavensis":"mammals","Glaucomys sabrinus":"mammals","Xerospermophilus tereticaudus":"mammals","Sciurus griseus":"mammals","Ammospermophilus leucurus":"mammals","Sorex ornatus":"mammals","Scapanus occultus":"mammals","Ursus americanus":"mammals","Bison bison":"mammals","Vulpes vulpes":"mammals","Didelphis virginiana":"mammals","Oryctolagus cuniculus":"mammals","Mus musculus":"mammals","Rattus norvegicus":"mammals","Rattus rattus":"mammals","Sciurus niger":"mammals","Sciurus carolinensis":"mammals","Sus scrofa":"mammals","Nyctinomops macrotis":"bats","Tadarida brasiliensis":"bats","Nyctinomops femorosaccus":"bats","Eumops perotis":"bats","Eptesicus fuscus":"bats","Myotis californicus":"bats","Myotis thysanodes":"bats","Lasiurus cinereus":"bats","Myotis evotis":"bats","Myotis volans":"bats","Antrozous pallidus":"bats","Lasionycteris noctivagans":"bats","Myotis auriculus":"bats","Euderma maculatum":"bats","Corynorhinus townsendii":"bats","Parastrellus hesperus":"bats","Lasiurus frantzii":"bats","Myotis ciliolabrum":"bats","Lasiurus xanthinus":"bats","Myotis yumanensis":"bats","Balaenoptera musculus":"marine_mammals","Balaenoptera physalus":"marine_mammals","Megaptera novaeangliae":"marine_mammals","Balaenoptera acutorostrata":"marine_mammals","Tursiops truncatus":"marine_mammals","Delphinus delphis":"marine_mammals","Orcinus orca":"marine_mammals","Aethalodelphis obliquidens":"marine_mammals","Grampus griseus":"marine_mammals","Eschrichtius robustus":"marine_mammals","Kogia breviceps":"marine_mammals","Enhydra lutris":"marine_mammals","Zalophus californianus":"marine_mammals","Arctocephalus townsendi":"marine_mammals","Eumetopias jubatus":"marine_mammals","Phoca vitulina":"marine_mammals","Mirounga angustirostris":"marine_mammals","Phocoenoides dalli":"marine_mammals","Physeter macrocephalus":"marine_mammals","Leuresthes tenuis":"freshwater_fish","Atherinopsis californiensis":"freshwater_fish","Atherinops affinis":"freshwater_fish","Pantosteus santaanae":"freshwater_fish","Catostomus occidentalis":"freshwater_fish","Leptocottus armatus":"freshwater_fish","Cottus asper":"freshwater_fish","Gila orcuttii":"freshwater_fish","Ptychocheilus grandis":"freshwater_fish","Rhinichthys gabrielino":"freshwater_fish","Fundulus parvipinnis":"freshwater_fish","Gasterosteus aculeatus":"freshwater_fish","Oncorhynchus mykiss":"freshwater_fish","Menidia beryllina":"freshwater_fish","Menidia audens":"freshwater_fish","Pomoxis nigromaculatus":"freshwater_fish","Lepomis macrochirus":"freshwater_fish","Lepomis cyanellus":"freshwater_fish","Micropterus nigricans":"freshwater_fish","Lepomis microlophus":"freshwater_fish","Micropterus dolomieu":"freshwater_fish","Pomoxis annularis":"freshwater_fish","Oreochromis aureus":"freshwater_fish","Amatitlania nigrofasciata":"freshwater_fish","Oreochromis niloticus":"freshwater_fish","Oreochromis mossambicus":"freshwater_fish","Dorosoma petenense":"freshwater_fish","Misgurnus anguillicaudatus":"freshwater_fish","Cyprinus rubrofuscus":"freshwater_fish","Cyprinus carpio":"freshwater_fish","Pimephales promelas":"freshwater_fish","Carassius auratus":"freshwater_fish","Cyprinella lutrensis":"freshwater_fish","Ameiurus melas":"freshwater_fish","Ictalurus punctatus":"freshwater_fish","Morone saxatilis":"freshwater_fish","Poecilia reticulata":"freshwater_fish","Poecilia latipinna":"freshwater_fish","Xiphophorus variatus":"freshwater_fish","Gambusia affinis":"freshwater_fish","Salvelinus fontinalis":"freshwater_fish","Salmo trutta":"freshwater_fish"};
+const GUIDE_SPECIES = new Map();
+const GUIDE_BINOMIALS = new Set();
+for(const[b,g]of Object.entries(GUIDE_LOOKUP_DEFAULT)){GUIDE_SPECIES.set(b,{group:g});GUIDE_BINOMIALS.add(b);}
+
+/* ─── Taxon queries ─── */
+const QUERIES = [
+  { label: 'Reptilia',       taxon_id: 26036, emoji: '🦎' },
+  { label: 'Amphibia',       taxon_id: 20978, emoji: '🐸' },
+  { label: 'Mammalia',       taxon_id: 40151, emoji: '🦁' },
+  { label: 'Actinopterygii', taxon_id: 47178, emoji: '🐟' },
+];
+const PLACE_ID = 962;
+
+/* ─── Family → guide group mapping ─── */
+const FAMILY_GROUP = {
+  // Lizards
+  "Phrynosomatidae":"lizards","Anguidae":"lizards","Teiidae":"lizards","Scincidae":"lizards",
+  "Gekkonidae":"lizards","Eublepharidae":"lizards","Anniellidae":"lizards","Iguanidae":"lizards",
+  "Xantusiidae":"lizards","Dactyloidae":"introduced_herps","Lacertidae":"introduced_herps",
+  "Phyllodactylidae":"introduced_herps","Chamaeleonidae":"introduced_herps",
+  // Snakes
+  "Viperidae":"snakes","Colubridae":"snakes","Boidae":"snakes","Leptotyphlopidae":"snakes",
+  "Pythonidae":"introduced_herps",
+  // Turtles
+  "Emydidae":"turtles","Trionychidae":"turtles","Testudinidae":"turtles","Kinosternidae":"turtles",
+  // Frogs
+  "Hylidae":"frogs","Ranidae":"frogs","Bufonidae":"frogs","Pipidae":"frogs",
+  "Scaphiopodidae":"frogs","Eleutherodactylidae":"frogs",
+  // Salamanders
+  "Salamandridae":"salamanders","Plethodontidae":"salamanders",
+  // Large mammals
+  "Felidae":"large_mammals","Canidae":"large_mammals","Cervidae":"large_mammals",
+  "Procyonidae":"large_mammals","Mephitidae":"large_mammals","Didelphidae":"large_mammals",
+  "Ursidae":"large_mammals","Mustelidae":"large_mammals","Suidae":"large_mammals","Bovidae":"large_mammals",
+  // Small mammals
+  "Sciuridae":"small_mammals","Cricetidae":"small_mammals","Leporidae":"small_mammals",
+  "Geomyidae":"small_mammals","Heteromyidae":"small_mammals","Muridae":"small_mammals",
+  "Soricidae":"small_mammals","Talpidae":"small_mammals","Erethizontidae":"small_mammals",
+  // Bats
+  "Molossidae":"bats","Vespertilionidae":"bats","Phyllostomidae":"bats",
+  // Marine mammals
+  "Otariidae":"marine_mammals","Phocidae":"marine_mammals","Eschrichtiidae":"marine_mammals",
+  "Delphinidae":"marine_mammals","Balaenopteridae":"marine_mammals","Phocoenidae":"marine_mammals",
+  "Ziphiidae":"marine_mammals","Kogiidae":"marine_mammals","Physeteridae":"marine_mammals",
+  // Freshwater fish
+  "Catostomidae":"freshwater_fish","Cyprinidae":"freshwater_fish","Gasterosteidae":"freshwater_fish",
+  "Centrarchidae":"freshwater_fish","Poeciliidae":"freshwater_fish","Cichlidae":"freshwater_fish",
+  "Salmonidae":"freshwater_fish","Cottidae":"freshwater_fish","Ictaluridae":"freshwater_fish",
+  "Clupeidae":"freshwater_fish","Atherinopsidae":"freshwater_fish","Leuciscidae":"freshwater_fish",
+  "Fundulidae":"freshwater_fish","Percidae":"freshwater_fish","Gobiidae":"freshwater_fish",
+  "Petromyzontidae":"freshwater_fish",
+};
+
+/* ─── Exclusion patterns ─── */
+const EXCLUDE_FAMILIES = new Set([
+  // Marine-only fish families (not freshwater)
+  "Scombridae","Embiotocidae","Pleuronectidae","Paralichthyidae","Labridae",
+  "Serranidae","Scorpaenidae","Sebastidae","Merlucciidae","Engraulidae",
+  "Myliobatidae","Dasyatidae","Heterodontidae","Triakidae","Carcharhinidae",
+  "Rhinobatidae","Rajidae","Torpedinidae","Squatinidae","Squalidae",
+  "Alopiidae","Lamnidae","Sphyrnidae","Hexanchidae",
+  // Sea turtles
+  "Cheloniidae","Dermochelyidae",
+]);
+
+/* ─── State ─── */
+let allGaps = [];
+let nativeSet = new Set();
+let activeFilter = 'all';
+
+/* ─── Utilities ─── */
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function log(msg, cls = '') {
+  const box = document.getElementById('logBox');
+  box.classList.remove('hidden');
+  box.innerHTML += `<div class="${cls}">${msg}</div>`;
+  box.scrollTop = box.scrollHeight;
+}
+
+function setProgress(pct, text) {
+  document.getElementById('progressWrap').classList.remove('hidden');
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = text;
+}
+
+async function apiFetch(url) {
+  await sleep(1100); // rate limit
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`API ${resp.status}: ${url}`);
+  return resp.json();
+}
+
+/* ─── Step 1: Load guide species (embedded default + optional upload) ─── */
+function loadGuideSpecies() {
+  // Already pre-populated from GUIDE_LOOKUP_DEFAULT
+  log(`✓ Guide: ${GUIDE_SPECIES.size} species (${GUIDE_BINOMIALS.size} binomials) — ${window._guideSource || 'embedded v3.003'}`, 'ok');
+}
+
+function handleUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      GUIDE_SPECIES.clear();
+      GUIDE_BINOMIALS.clear();
+      for (const [group, list] of Object.entries(data)) {
+        for (const sp of list) {
+          const binomial = sp.sn.split(' ').slice(0, 2).join(' ');
+          GUIDE_SPECIES.set(binomial, { cn: sp.cn, group, fam: sp.fam, sn: sp.sn, est: sp.est });
+          GUIDE_BINOMIALS.add(binomial);
+        }
+      }
+      window._guideSource = 'uploaded ' + file.name;
+      document.getElementById('guideStatus').textContent = 
+        GUIDE_SPECIES.size + ' species loaded from ' + file.name;
+      document.getElementById('guideStatus').style.color = 'var(--green-ok)';
+    } catch (err) {
+      alert('Invalid JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ─── Step 2: Fetch iNat species counts ─── */
+async function fetchSpeciesCounts(query) {
+  const allSpecies = [];
+  let page = 1;
+  let totalResults = 0;
+
+  while (true) {
+    const url = `https://api.inaturalist.org/v1/observations/species_counts?place_id=${PLACE_ID}&taxon_id=${query.taxon_id}&quality_grade=research&per_page=500&page=${page}`;
+    const data = await apiFetch(url);
+    
+    if (page === 1) {
+      totalResults = data.total_results;
+      log(`${query.emoji} ${query.label}: ${totalResults} species found`);
+    }
+
+    for (const r of data.results) {
+      allSpecies.push({
+        id: r.taxon.id,
+        name: r.taxon.name,
+        rank: r.taxon.rank,
+        count: r.count,
+        commonName: r.taxon.preferred_common_name || '',
+        ancestorIds: r.taxon.ancestor_ids || [],
+        iconic: r.taxon.iconic_taxon_name || '',
+      });
+    }
+
+    if (allSpecies.length >= totalResults || data.results.length === 0) break;
+    page++;
+  }
+
+  return allSpecies;
+}
+
+/* ─── Step 3: Batch family lookup ─── */
+async function batchFamilyLookup(taxonIds) {
+  const familyMap = {};
+  const batches = [];
+  
+  for (let i = 0; i < taxonIds.length; i += 30) {
+    batches.push(taxonIds.slice(i, i + 30));
+  }
+
+  log(`Looking up families for ${taxonIds.length} species in ${batches.length} batches...`);
+
+  for (let i = 0; i < batches.length; i++) {
+    const ids = batches[i].join(',');
+    try {
+      const data = await apiFetch(`https://api.inaturalist.org/v1/taxa/${ids}`);
+      for (const t of data.results) {
+        // Walk ancestors to find family
+        if (t.ancestors) {
+          for (const a of t.ancestors) {
+            if (a.rank === 'family') {
+              familyMap[t.id] = a.name;
+              break;
+            }
+          }
+        }
+        // If taxon itself has a family-level rank_level
+        if (!familyMap[t.id] && t.rank === 'family') {
+          familyMap[t.id] = t.name;
+        }
+      }
+    } catch (e) {
+      log(`⚠ Batch ${i + 1} lookup failed: ${e.message}`, 'warn');
+    }
+    setProgress(60 + (i / batches.length) * 20, `Family lookup batch ${i + 1}/${batches.length}`);
+  }
+
+  return familyMap;
+}
+
+/* ─── Step 4: Native detection (two-pass) ─── */
+async function fetchNativeSpecies() {
+  log('Running native detection pass...');
+  const nativeIds = new Set();
+
+  for (const query of QUERIES) {
+    let page = 1;
+    while (true) {
+      const url = `https://api.inaturalist.org/v1/observations/species_counts?place_id=${PLACE_ID}&taxon_id=${query.taxon_id}&quality_grade=research&native=true&per_page=500&page=${page}`;
+      const data = await apiFetch(url);
+      for (const r of data.results) {
+        nativeIds.add(r.taxon.id);
+      }
+      if (page * 500 >= data.total_results || data.results.length === 0) break;
+      page++;
+    }
+    log(`  ${query.emoji} ${query.label}: ${nativeIds.size} cumulative native species`);
+  }
+
+  return nativeIds;
+}
+
+/* ─── Main audit ─── */
+async function runAudit() {
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.textContent = 'Running...';
+  allGaps = [];
+
+  try {
+    // Step 1: Load guide
+    setProgress(5, 'Loading guide species...');
+    await loadGuideSpecies();
+
+    // Step 2: Fetch all iNat species
+    const allInatSpecies = [];
+    for (let i = 0; i < QUERIES.length; i++) {
+      setProgress(10 + (i / QUERIES.length) * 30, `Fetching ${QUERIES[i].label}...`);
+      const species = await fetchSpeciesCounts(QUERIES[i]);
+      for (const sp of species) {
+        sp.queryLabel = QUERIES[i].label;
+      }
+      allInatSpecies.push(...species);
+    }
+
+    log(`\nTotal iNat species across all queries: ${allInatSpecies.length}`);
+
+    // Deduplicate by taxon ID
+    const byId = new Map();
+    for (const sp of allInatSpecies) {
+      if (!byId.has(sp.id) || byId.get(sp.id).count < sp.count) {
+        byId.set(sp.id, sp);
+      }
+    }
+    log(`After dedup: ${byId.size} unique species`);
+
+    // Step 3: Filter to species rank only & ≥2 obs
+    const speciesOnly = [...byId.values()].filter(sp => sp.rank === 'species' && sp.count >= 2);
+    log(`Species rank with ≥2 RG obs: ${speciesOnly.length}`);
+
+    // Step 4: Find gaps (not in guide)
+    const rawGaps = speciesOnly.filter(sp => {
+      const binomial = sp.name.split(' ').slice(0, 2).join(' ');
+      return !GUIDE_BINOMIALS.has(binomial) && !GUIDE_BINOMIALS.has(sp.name);
+    });
+    log(`Raw gaps (not in guide): ${rawGaps.length}`);
+
+    // Step 5: Batch family lookup for gaps
+    setProgress(55, 'Looking up families...');
+    const gapIds = rawGaps.map(sp => sp.id);
+    const familyMap = await batchFamilyLookup(gapIds);
+
+    // Step 6: Native detection
+    setProgress(80, 'Detecting native status...');
+    nativeSet = await fetchNativeSpecies();
+
+    // Step 7: Classify gaps
+    setProgress(90, 'Classifying gaps...');
+    let excludedMarine = 0;
+    let excludedMicro = 0;
+
+    for (const sp of rawGaps) {
+      const family = familyMap[sp.id] || 'Unknown';
+      
+      // Exclude marine-only families
+      if (EXCLUDE_FAMILIES.has(family)) {
+        excludedMarine++;
+        continue;
+      }
+
+      const group = FAMILY_GROUP[family] || 'unknown';
+      const isNative = nativeSet.has(sp.id);
+      const tier = sp.count >= 20 ? 1 : sp.count >= 5 ? 2 : 3;
+
+      allGaps.push({
+        name: sp.name,
+        commonName: sp.commonName,
+        family,
+        group,
+        count: sp.count,
+        tier,
+        native: isNative,
+        taxonId: sp.id,
+        queryLabel: sp.queryLabel,
+      });
+    }
+
+    allGaps.sort((a, b) => b.count - a.count);
+
+    log(`\nExcluded: ${excludedMarine} marine-only, ${excludedMicro} microscopic`, 'warn');
+    
+    const t1 = allGaps.filter(g => g.tier === 1).length;
+    const t2 = allGaps.filter(g => g.tier === 2).length;
+    const t3 = allGaps.filter(g => g.tier === 3).length;
+    const matched = speciesOnly.length - rawGaps.length;
+    
+    log(`\n✓ AUDIT COMPLETE`, 'ok');
+    log(`  Matched to guide: ${matched}`, 'ok');
+    log(`  Genuine gaps: ${allGaps.length}`, 'ok');
+    log(`  Tier 1 (≥20 obs): ${t1}`, 'ok');
+    log(`  Tier 2 (5-19 obs): ${t2}`);
+    log(`  Tier 3 (2-4 obs): ${t3}`);
+
+    setProgress(100, 'Complete!');
+    renderResults();
+
+  } catch (e) {
+    log(`✗ Fatal error: ${e.message}`, 'err');
+    console.error(e);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔍 Re-run Audit';
+}
+
+/* ─── Render results ─── */
+function renderResults() {
+  const card = document.getElementById('resultsCard');
+  card.classList.remove('hidden');
+
+  const t1 = allGaps.filter(g => g.tier === 1);
+  const t2 = allGaps.filter(g => g.tier === 2);
+  const t3 = allGaps.filter(g => g.tier === 3);
+  const natCount = allGaps.filter(g => g.native).length;
+  const introCount = allGaps.length - natCount;
+
+  // Summary stats
+  document.getElementById('summaryStats').innerHTML = `
+    <div class="stat"><div class="n">${allGaps.length}</div><div class="l">Total Gaps</div></div>
+    <div class="stat"><div class="n" style="color:var(--forest)">${t1.length}</div><div class="l">Tier 1 (≥20 obs)</div></div>
+    <div class="stat"><div class="n" style="color:var(--gold)">${t2.length}</div><div class="l">Tier 2 (5–19)</div></div>
+    <div class="stat"><div class="n" style="color:#999">${t3.length}</div><div class="l">Tier 3 (2–4)</div></div>
+    <div class="stat"><div class="n" style="color:#2E7D32">${natCount}</div><div class="l">Native</div></div>
+    <div class="stat"><div class="n" style="color:#D4760A">${introCount}</div><div class="l">Introduced</div></div>
+  `;
+
+  // Filters
+  const groups = [...new Set(allGaps.map(g => g.group))].sort();
+  let filterHtml = `<span class="fchip active" data-f="all" onclick="setFilter('all')">All (${allGaps.length})</span>`;
+  filterHtml += `<span class="fchip" data-f="t1" onclick="setFilter('t1')">Tier 1 (${t1.length})</span>`;
+  filterHtml += `<span class="fchip" data-f="t2" onclick="setFilter('t2')">Tier 2 (${t2.length})</span>`;
+  filterHtml += `<span class="fchip" data-f="t3" onclick="setFilter('t3')">Tier 3 (${t3.length})</span>`;
+  filterHtml += `<span style="border-left:1px solid #ddd;margin:0 4px"></span>`;
+  filterHtml += `<span class="fchip" data-f="native" onclick="setFilter('native')">Native (${natCount})</span>`;
+  filterHtml += `<span class="fchip" data-f="intro" onclick="setFilter('intro')">Introduced (${introCount})</span>`;
+  filterHtml += `<span style="border-left:1px solid #ddd;margin:0 4px"></span>`;
+  for (const g of groups) {
+    const cnt = allGaps.filter(x => x.group === g).length;
+    filterHtml += `<span class="fchip" data-f="g:${g}" onclick="setFilter('g:${g}')">${g} (${cnt})</span>`;
+  }
+  document.getElementById('filterBar').innerHTML = filterHtml;
+
+  renderTable();
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.fchip').forEach(c => {
+    c.classList.toggle('active', c.dataset.f === f);
+  });
+  renderTable();
+}
+
+function renderTable() {
+  let filtered = allGaps;
+  if (activeFilter === 't1') filtered = allGaps.filter(g => g.tier === 1);
+  else if (activeFilter === 't2') filtered = allGaps.filter(g => g.tier === 2);
+  else if (activeFilter === 't3') filtered = allGaps.filter(g => g.tier === 3);
+  else if (activeFilter === 'native') filtered = allGaps.filter(g => g.native);
+  else if (activeFilter === 'intro') filtered = allGaps.filter(g => !g.native);
+  else if (activeFilter.startsWith('g:')) {
+    const group = activeFilter.slice(2);
+    filtered = allGaps.filter(g => g.group === group);
+  }
+
+  let html = `<table><thead><tr><th>#</th><th>Species</th><th>Common Name</th><th>Family</th><th>Group</th><th>Obs</th><th>Tier</th><th>Est</th><th>iNat</th></tr></thead><tbody>`;
+  
+  for (let i = 0; i < filtered.length; i++) {
+    const g = filtered[i];
+    const tierBadge = g.tier === 1 ? '<span class="badge b-t1">T1</span>' : g.tier === 2 ? '<span class="badge b-t2">T2</span>' : '<span class="badge b-t3">T3</span>';
+    const estBadge = g.native ? '<span class="badge b-native">Native</span>' : '<span class="badge b-intro">Intro</span>';
+    
+    html += `<tr>
+      <td>${i + 1}</td>
+      <td class="sn">${g.name}</td>
+      <td>${g.commonName || '—'}</td>
+      <td>${g.family}</td>
+      <td>${g.group}</td>
+      <td><strong>${g.count}</strong></td>
+      <td>${tierBadge}</td>
+      <td>${estBadge}</td>
+      <td><a href="https://www.inaturalist.org/taxa/${g.taxonId}" target="_blank" style="color:var(--forest);font-size:10px">→</a></td>
+    </tr>`;
+  }
+  
+  html += `</tbody></table>`;
+  document.getElementById('tableWrap').innerHTML = html;
+}
+
+/* ─── Export ─── */
+function exportJSON() {
+  const area = document.getElementById('exportArea');
+  area.classList.remove('hidden');
+  area.value = JSON.stringify(allGaps, null, 2);
+  area.select();
+}
+
+function exportCSV() {
+  const area = document.getElementById('exportArea');
+  area.classList.remove('hidden');
+  let csv = 'Scientific Name,Common Name,Family,Group,Observations,Tier,Native\n';
+  for (const g of allGaps) {
+    csv += `"${g.name}","${g.commonName}","${g.family}","${g.group}",${g.count},${g.tier},${g.native}\n`;
+  }
+  area.value = csv;
+  area.select();
+}
+
+function exportPrompt() {
+  const area = document.getElementById('exportArea');
+  area.classList.remove('hidden');
+  
+  const t1 = allGaps.filter(g => g.tier === 1);
+  const t2 = allGaps.filter(g => g.tier === 2);
+  
+  let prompt = `# Fauna Guide Gap Enrichment — ${t1.length + t2.length} Species\n\n`;
+  prompt += `## Tier 1 (≥20 RG observations) — ${t1.length} species\n`;
+  prompt += `These should all be added to the guide.\n\n`;
+  
+  for (const g of t1) {
+    prompt += `- **${g.commonName || g.name}** (*${g.name}*) — ${g.family} → ${g.group} — ${g.count} obs — ${g.native ? 'native' : 'introduced'}\n`;
+  }
+  
+  prompt += `\n## Tier 2 (5–19 observations) — ${t2.length} species\n`;
+  prompt += `Strong candidates for addition.\n\n`;
+  
+  for (const g of t2) {
+    prompt += `- **${g.commonName || g.name}** (*${g.name}*) — ${g.family} → ${g.group} — ${g.count} obs — ${g.native ? 'native' : 'introduced'}\n`;
+  }
+  
+  prompt += `\n## Tier 3 (2–4 observations) — ${allGaps.filter(g => g.tier === 3).length} species\n`;
+  prompt += `Saved for future expansion. See JSON export for full list.\n`;
+  
+  area.value = prompt;
+  area.select();
+}
+</script>
+</body>
+</html>
