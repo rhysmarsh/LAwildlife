@@ -1,13 +1,11 @@
 /*
-  X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
 
 /sw.js
   Cache-Control: no-cache
 
-/*.html
+/species-data.json
   Cache-Control: public, max-age=3600
-
-/icon-*.png
-  Cache-Control: public, max-age=31536000
+  Access-Control-Allow-Origin: *

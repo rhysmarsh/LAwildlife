@@ -70,6 +70,11 @@ button{font-family:inherit;cursor:pointer}input{font-family:inherit}
 .sc{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;border-left:4px solid #999;background:#222}
 .sc::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0.12) 40%,transparent 60%);pointer-events:none;border-radius:inherit}
 .sc:active{transform:scale(0.97)}
+/* Badge column (Build Lesson #19) */
+.badge-col{position:absolute;top:5px;left:5px;z-index:3;display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.inv-pill{font-family:var(--fb);font-style:normal;font-size:8px;font-weight:700;color:#fff;background:rgba(198,40,40,0.85);padding:2px 6px;border-radius:4px;letter-spacing:0.03em}
+.intro-pill{font-family:var(--fb);font-style:normal;font-size:8px;font-weight:600;color:#fff;background:rgba(212,118,10,0.8);padding:2px 6px;border-radius:4px;letter-spacing:0.03em}
+.venom-pip{position:absolute;bottom:6px;right:6px;z-index:3;font-size:10px;background:rgba(198,40,40,0.8);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 .ob{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:50%;background:var(--green-ok);display:flex;align-items:center;justify-content:center;z-index:3;box-shadow:0 1px 3px rgba(0,0,0,0.3);color:#fff;font-size:11px;font-weight:700}
 .cp{position:absolute;inset:0;background-size:cover;background-position:center}
 .cp .ep{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:38px;opacity:0.25}
@@ -227,7 +232,7 @@ button{font-family:inherit;cursor:pointer}input{font-family:inherit}
 <body>
 <div class="load-ovr" id="loadOvr"><div class="load-emoji">🦎</div><div class="load-text">LA County Wildlife</div><div class="load-sub">Loading species data…</div></div>
 <div class="notch-bg"></div>
-<header class="hdr"><h1>LA County Wildlife<br>Field Guide <span style="font-size:14px;font-weight:400;opacity:0.6">v3.004</span></h1><p class="sub" id="hSub">252 species across 9 taxa groups<br><span style="font-size:9px;opacity:0.5;font-weight:400">For informational purposes only — always maintain safe distance from wildlife</span></p></header>
+<header class="hdr"><h1>LA County Wildlife<br>Field Guide <span style="font-size:14px;font-weight:400;opacity:0.6">v3.005</span></h1><p class="sub" id="hSub">252 species across 9 taxa groups<br><span style="font-size:9px;opacity:0.5;font-weight:400">For informational purposes only — always maintain safe distance from wildlife</span></p></header>
 <nav class="tbar" id="tBar"></nav>
 <main class="cnt">
 <div class="wildlife-disclaimer">⚠️ Southern Pacific Rattlesnake is the ONLY dangerously venomous snake in LA County. Never handle wildlife.<span>Maintain safe distance from all wild animals. If bitten by a rattlesnake, call 911 immediately. This guide is for educational reference only.</span></div>
@@ -375,9 +380,10 @@ ppq();}
 async function fetchLL(){if(!state.inatUsername)return;state.lifeListLoading=true;rLL();
 const res={};const idMap={};for(const k of TAXA_ORDER){const tid=TAXA[k].iNatTaxonId;if(!idMap[tid])idMap[tid]=[];idMap[tid].push(k);}
 for(const[tid,taxa]of Object.entries(idMap)){
-try{const r=await fetch(`https://api.inaturalist.org/v1/observations/species_counts?user_id=${encodeURIComponent(state.inatUsername)}&place_id=962&taxon_id=${tid}&per_page=500`);
-const d=await r.json();const ids=new Set(),names=new Set();
-for(const x of(d.results||[])){if(x.taxon?.id)ids.add(x.taxon.id);if(x.taxon?.name)names.add(x.taxon.name.toLowerCase());}
+try{const ids=new Set(),names=new Set();let page=1;
+while(true){const r=await fetch(`https://api.inaturalist.org/v1/observations/species_counts?user_id=${encodeURIComponent(state.inatUsername)}&place_id=962&taxon_id=${tid}&quality_grade=research%2Cneeds_id&per_page=500&page=${page}`);
+const d=await r.json();for(const x of(d.results||[])){if(x.taxon?.id)ids.add(x.taxon.id);if(x.taxon?.name)names.add(x.taxon.name.toLowerCase());}
+if(page*500>=d.total_results||!d.results?.length)break;page++;}
 for(const k of taxa)res[k]={ids,names};}catch{for(const k of taxa)res[k]={ids:new Set(),names:new Set()};}}
 state.lifeListData=res;state.lifeListLoading=false;render();}
 
@@ -480,9 +486,14 @@ html+=`<div class="fg"><div class="fgt" style="color:${fc};border-bottom:2px sol
 for(const sp of spp){const obs=isO(sp),ca=state.photoCache[sp.sn];
 const ps=ca&&ca.url?`background:url(${ca.url}) center/cover no-repeat`:`background:linear-gradient(135deg,${fc}22,${fc}44)`;
 const pip=STATUS_PIP[sp.st];const isIntro=sp.est==='introduced';const isInvasive=sp.est==='invasive';
-html+=`<div class="sc" style="border-left-color:${fc}" data-sid="${sp.id}">${obs?`<div class="ob">\u2713</div>`:''}${pip?`<div class="st-pip" style="background:${pip.bg};color:${pip.text}"><span class="st-dot" style="background:${pip.dot}"></span>${pip.label}</div>`:''}${sp.venomous?`<div class="st-pip" style="background:rgba(198,40,40,0.7);color:#fff;left:auto;right:6px;top:auto;bottom:6px"><span class="st-dot" style="background:#C62828"></span>⚠</div>`:''}
+let badges='';
+if(isInvasive)badges+=`<div class="inv-pill">⚠ INV</div>`;
+else if(isIntro)badges+=`<div class="intro-pill">INTRO</div>`;
+if(pip)badges+=`<div class="st-pip" style="background:${pip.bg};color:${pip.text}"><span class="st-dot" style="background:${pip.dot}"></span>${pip.label}</div>`;
+const badgeCol=badges?`<div class="badge-col">${badges}</div>`:'';
+html+=`<div class="sc" style="border-left-color:${fc}" data-sid="${sp.id}">${obs?`<div class="ob">\u2713</div>`:''}${badgeCol}${sp.venomous?`<div class="venom-pip">⚠</div>`:''}
 <div class="cp" style="${ps}">${!ca||!ca.url?`<div class="ep">${tc.emoji}</div>`:''}</div>
-<div class="cb"><div class="ccn">${sp.cn}</div><div class="csn">${sp.sn}${isInvasive?'<span class="intro-mark" style="color:rgba(255,100,100,0.9)"> ⚠</span>':isIntro?'<span class="intro-mark"> ✦</span>':''}</div></div></div>`;}
+<div class="cb"><div class="ccn">${sp.cn}</div><div class="csn">${sp.sn}</div></div></div>`;}
 html+=`</div></div>`;}
 cont.innerHTML=html;aL();ep(list,true);}
 
@@ -652,7 +663,12 @@ document.getElementById('sInp').value=state.searchQuery;rSp();}
 
 /* v3: Async species data loader with CacheStorage fallback */
 const SD_URL='species-data.json';
-const SW_CACHE='la-fauna-guide-v3.004';
+const SW_CACHE='la-fauna-guide-v3.005';
+
+/* IDB offline persistence (Build Lesson #30) — iOS Safari evicts SW caches after ~7 days */
+const IDB_OFFLINE='faunaOffline';
+function idbSaveData(data){try{const r=indexedDB.open(IDB_OFFLINE,1);r.onupgradeneeded=e=>{e.target.result.createObjectStore('data')};r.onsuccess=e=>{const tx=e.target.result.transaction('data','readwrite');tx.objectStore('data').put(JSON.stringify(data),'species-data');}}catch{}}
+function idbLoadData(){return new Promise((resolve,reject)=>{try{const r=indexedDB.open(IDB_OFFLINE,1);r.onupgradeneeded=e=>{e.target.result.createObjectStore('data')};r.onsuccess=e=>{const tx=e.target.result.transaction('data','readonly');const req=tx.objectStore('data').get('species-data');req.onsuccess=()=>{if(req.result)resolve(JSON.parse(req.result));else reject(new Error('No IDB data'))};req.onerror=()=>reject(req.error)};r.onerror=()=>reject(r.error)}catch(e){reject(e)}})}
 
 async function loadSpeciesData(){
 try{
@@ -661,6 +677,7 @@ if(!resp.ok)throw new Error('Network '+resp.status);
 const data=await resp.json();
 SPECIES_DATA=data;
 try{const cache=await caches.open(SW_CACHE);cache.put(SD_URL,new Response(JSON.stringify(data),{headers:{'Content-Type':'application/json'}}));}catch{}
+idbSaveData(data);
 return;
 }catch(e){console.warn('Network fetch failed, trying cache:',e);}
 try{
@@ -668,6 +685,10 @@ const cache=await caches.open(SW_CACHE);
 const cached=await cache.match(SD_URL);
 if(cached){SPECIES_DATA=await cached.json();return;}
 }catch(e2){console.warn('Cache fallback failed:',e2);}
+try{
+SPECIES_DATA=await idbLoadData();
+console.log('Loaded from IndexedDB offline store');return;
+}catch(e3){console.warn('IDB fallback failed:',e3);}
 throw new Error('No species data available');}
 
 function dismissLoader(){
@@ -692,8 +713,10 @@ return false;}
 function checkDeepLink(){
 const params=new URLSearchParams(location.search);
 const hash=location.hash.replace('#','');
-const speciesQ=params.get('species')||params.get('search');
+const speciesQ=params.get('species');
+const searchQ=params.get('search');
 if(speciesQ){findAndOpenSpecies(speciesQ);return;}
+if(searchQ){state.searchQuery=searchQ.replace(/\+/g,' ');const el=document.getElementById('sSrch');if(el)el.value=state.searchQuery;render();return;}
 if(hash&&hash.startsWith('species/')){
 findAndOpenSpecies(decodeURIComponent(hash.replace('species/','')));return;}
 if(hash&&TAXA_ORDER.includes(hash)&&hash!==state.activeTaxon){

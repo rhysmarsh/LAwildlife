@@ -1,4 +1,4 @@
-const CACHE='la-fauna-guide-v3.004';
+const CACHE='la-fauna-guide-v3.005';
 const ASSETS=['./','./index.html','./species-data.json'];
 
 self.addEventListener('install',e=>{
