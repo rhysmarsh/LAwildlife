@@ -107,7 +107,7 @@ button{font-family:inherit;cursor:pointer}input{font-family:inherit}
 .ds-map-wrap{position:relative;margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid #e0d8cc}
 .ds-map{width:100%;height:240px}
 .ds-map-label{font-size:10px;font-weight:600;color:var(--forest);margin-bottom:6px;letter-spacing:0.04em;text-transform:uppercase}
-.st-pip{position:absolute;top:6px;left:10px;z-index:3;display:flex;align-items:center;gap:3px;padding:2px 7px 2px 5px;border-radius:8px;font-size:7.5px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 1px 4px rgba(0,0,0,0.3);pointer-events:none;line-height:1}
+.st-pip{display:flex;align-items:center;gap:3px;padding:2px 7px 2px 5px;border-radius:8px;font-size:7.5px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 1px 4px rgba(0,0,0,0.3);pointer-events:none;line-height:1}
 .st-pip .st-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .intro-mark{font-style:normal;font-size:9px;color:rgba(255,255,255,0.7);margin-left:3px;vertical-align:baseline}
 .ds-cons{margin-bottom:12px;padding:8px 10px;border-radius:8px;border-left:3px solid #C62828;background:rgba(198,40,40,0.06);font-size:11px;line-height:1.5;color:#555}
@@ -183,6 +183,10 @@ button{font-family:inherit;cursor:pointer}input{font-family:inherit}
 .xlink-flora:hover{color:var(--gold);border-bottom-color:var(--forest)}
 .xlink-fungi{color:#795548}
 .xlink-fungi:hover{color:var(--gold);border-bottom-color:#795548}
+.xlink-bugs{color:var(--forest)}
+.xlink-bugs:hover{color:var(--gold);border-bottom-color:var(--forest)}
+.xlink-birds{color:#5D4037;border-bottom-color:#8D6E63}
+.xlink-birds:hover{color:var(--gold);border-bottom-color:#5D4037}
 </style>
 <meta name="description" content="Free field guide to 252 species of reptiles, amphibians, mammals, and freshwater fish in Los Angeles County, California. Photos, venomous species warnings, conservation status, observation maps, and offline life list tracking.">
 <link rel="canonical" href="https://lawildlife.org">
@@ -232,7 +236,7 @@ button{font-family:inherit;cursor:pointer}input{font-family:inherit}
 <body>
 <div class="load-ovr" id="loadOvr"><div class="load-emoji">🦎</div><div class="load-text">LA County Wildlife</div><div class="load-sub">Loading species data…</div></div>
 <div class="notch-bg"></div>
-<header class="hdr"><h1>LA County Wildlife<br>Field Guide <span style="font-size:14px;font-weight:400;opacity:0.6">v3.005</span></h1><p class="sub" id="hSub">252 species across 9 taxa groups<br><span style="font-size:9px;opacity:0.5;font-weight:400">For informational purposes only — always maintain safe distance from wildlife</span></p></header>
+<header class="hdr"><h1>LA County Wildlife<br>Field Guide <span style="font-size:14px;font-weight:400;opacity:0.6">v3.007</span></h1><p class="sub" id="hSub">252 species across 9 taxa groups<br><span style="font-size:9px;opacity:0.5;font-weight:400">For informational purposes only — always maintain safe distance from wildlife</span></p></header>
 <nav class="tbar" id="tBar"></nav>
 <main class="cnt">
 <div class="wildlife-disclaimer">⚠️ Southern Pacific Rattlesnake is the ONLY dangerously venomous snake in LA County. Never handle wildlife.<span>Maintain safe distance from all wild animals. If bitten by a rattlesnake, call 911 immediately. This guide is for educational reference only.</span></div>
@@ -244,7 +248,7 @@ button{font-family:inherit;cursor:pointer}input{font-family:inherit}
 <span style="color:#3A9B68;font-weight:600">Common</span> >200 obs/year; regularly encountered in habitat. <span style="color:#BFA46E;font-weight:600">Uncommon</span> 20–200 obs/year; present but requires searching. <span style="color:#D4760A;font-weight:600">Rare</span> &lt;20 obs/year; range edge or genuinely scarce.
 <br><br><strong>Venomous badge:</strong> <span style="color:#C62828;font-weight:600">⚠ Venomous</span> Southern Pacific Rattlesnake only — the sole medically significant venomous species in LA County.
 <br><br><strong>Tile indicators:</strong> Status badges appear on all tiles except Common. <span style="color:#D4760A">✦</span> after the scientific name = introduced/non-native species. <span style="color:#C62828">⚠</span> = invasive species.
-<br><br><strong>Establishment:</strong> <span style="color:var(--forest);font-weight:600">● Native</span> (178 species) | <span style="color:#D4760A;font-weight:600">✦ Introduced</span> (71 species) | <span style="color:#C62828;font-weight:600">⚠ Invasive</span> (3 species — American Bullfrog, Feral Pig, Argentine Tegu).
+<br><br><strong>Establishment:</strong> <span style="color:var(--forest);font-weight:600">● Native</span> (177 species) | <span style="color:#D4760A;font-weight:600">✦ Introduced</span> (72 species) | <span style="color:#C62828;font-weight:600">⚠ Invasive</span> (3 species — American Bullfrog, Feral Pig, Argentine Tegu).
 </div>
 <div class="ti" id="tInfo"></div>
 <div id="spCont"></div>
@@ -514,30 +518,47 @@ const m=i+1,active=mo.includes(m),peak=pk.includes(m);
 return '<div class="ds-phen-mo '+(peak?'peak':active?'active':'off')+'" style="height:'+(peak?'18px':active?'14px':'8px')+'">'+n+'</div>';
 }).join('')+'</div></div>';
 }
-/* v3: Cross-guide links — plant and fungi references → sister guides */
+/* v3: Cross-guide links — plant, fungi, invertebrate, and bird references → sister guides */
 const PLANT_LINKS={
-'coast live oak':'Quercus+agrifolia','live oak':'Quercus+agrifolia','Coast Live Oak':'Quercus+agrifolia',
 'oak woodland':'Quercus+agrifolia','oak':'Quercus+agrifolia',
-'creosote bush':'Larrea+tridentata','creosote':'Larrea+tridentata','Creosote':'Larrea+tridentata',
-'Joshua tree':'Yucca+brevifolia','joshua tree':'Yucca+brevifolia','Joshua trees':'Yucca+brevifolia',
-'sycamore':'Platanus+racemosa','Western Sycamore':'Platanus+racemosa',
-'willow':'Salix+laevigata','cottonwood':'Populus+fremontii',
-'manzanita':'Arctostaphylos','Manzanita':'Arctostaphylos',
+'creosote bush':'Larrea+tridentata','creosote':'Larrea+tridentata',
+'Joshua tree':'Yucca+brevifolia','Joshua trees':'Yucca+brevifolia',
+'sycamore':'Platanus+racemosa',
+'manzanita':'Arctostaphylos',
 'fan palm':'Washingtonia+fimbriata','fan palms':'Washingtonia+fimbriata','palm tree':'Washingtonia+fimbriata',
-'Monterey pine':'Pinus+radiata',
-'Douglas-fir':'Pseudotsuga+menziesii','douglas-fir':'Pseudotsuga+menziesii',
-'chamise':'Adenostoma+fasciculatum','Chamise':'Adenostoma+fasciculatum',
-'California sagebrush':'Artemisia+californica','california sagebrush':'Artemisia+californica',
 'walnut':'Juglans+californica',
-'cholla':'Cylindropuntia','Cholla':'Cylindropuntia',
-'ceanothus':'Ceanothus','Ceanothus':'Ceanothus',
-'elderberry':'Sambucus+nigra',
+'cholla':'Cylindropuntia',
 };
 const FUNGI_LINKS={
 'chytrid fungus':'Batrachochytrium+dendrobatidis','chytrid':'Batrachochytrium+dendrobatidis',
 'Batrachochytrium dendrobatidis':'Batrachochytrium+dendrobatidis',
-'truffle':'Tuber','truffles':'Tuber',
+'truffle':'Tuber',
 'mycorrhizal':'Amanita',
+};
+const BUG_LINKS={
+'harvester ants':['search','harvester+ant#wasps'],'harvester ant':['search','harvester+ant#wasps'],
+'Argentine ants':['search','Argentine+ant#wasps'],'Argentine ant':['search','Argentine+ant#wasps'],
+'scorpions':['search','scorpion#arachnids'],'scorpion':['search','scorpion#arachnids'],
+'centipedes':['search','centipede#myriapods'],'centipede':['search','centipede#myriapods'],
+'crayfish':['species','Procambarus+clarkii'],
+'mosquitoes':['search','mosquito#flies'],'mosquito':['search','mosquito#flies'],
+'beetles':['search','beetle#beetles'],'beetle':['search','beetle#beetles'],
+'moths':['search','moth#moths'],'moth':['search','moth#moths'],
+'termites':['search','termite'],'termite':['search','termite'],
+'spiders':['search','spider#arachnids'],
+'crickets':['search','cricket#orthoptera'],
+'midges':['search','midge#flies'],
+'snails':['search','snail#snails'],'snail':['search','snail#snails'],
+'ticks':['search','tick#arachnids'],
+
+'dragonflies':['search','dragonfly#dragonflies'],
+
+'butterfly':['search','butterfly#butterflies'],
+};
+const BIRD_LINKS={
+'Snowy Plover':['Snowy_Plover'],'Least Tern':['Least_Tern'],
+'raven':['Common_Raven'],
+'woodpecker':['Acorn_Woodpecker'],'songbirds':null,
 };
 
 function linkText(text){
@@ -554,6 +575,18 @@ const fungiKeys=Object.keys(FUNGI_LINKS).sort((a,b)=>b.length-a.length);
 for(const term of fungiKeys){
 const re=new RegExp('(?<![\\w/])'+term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![\\w/])','gi');
 out=out.replace(re,match=>ph(`<a href="https://lafungi.org?species=${FUNGI_LINKS[term]}" target="_blank" rel="noopener" class="xlink xlink-fungi" title="View in LA Fungi Guide">${match}</a>`));}
+// Bug links
+const bugKeys=Object.keys(BUG_LINKS).sort((a,b)=>b.length-a.length);
+for(const term of bugKeys){
+const re=new RegExp('(?<![\\w/])'+term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![\\w/])','g');
+const bl=BUG_LINKS[term];
+out=out.replace(re,()=>ph(`<a href="https://labugs.org?${bl[0]}=${bl[1]}" target="_blank" rel="noopener" class="xlink xlink-bugs" title="View in LA Bugs Guide">${term}</a>`));}
+// Bird links
+const birdKeys=Object.keys(BIRD_LINKS).sort((a,b)=>b.length-a.length);
+for(const term of birdKeys){
+if(!BIRD_LINKS[term])continue;
+const re=new RegExp('(?<![\\w/])'+term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![\\w/])','g');
+out=out.replace(re,()=>ph(`<a href="https://www.allaboutbirds.org/guide/${BIRD_LINKS[term][0]}/overview" target="_blank" rel="noopener" class="xlink xlink-birds" title="View on All About Birds">${term}</a>`));}
 // Restore placeholders
 for(const{id,html}of placeholders)out=out.replace(id,html);
 return out;}
@@ -663,7 +696,7 @@ document.getElementById('sInp').value=state.searchQuery;rSp();}
 
 /* v3: Async species data loader with CacheStorage fallback */
 const SD_URL='species-data.json';
-const SW_CACHE='la-fauna-guide-v3.005';
+const SW_CACHE='la-fauna-guide-v3.007';
 
 /* IDB offline persistence (Build Lesson #30) — iOS Safari evicts SW caches after ~7 days */
 const IDB_OFFLINE='faunaOffline';

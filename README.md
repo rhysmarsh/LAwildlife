@@ -111,8 +111,11 @@ CaliforniaHerps.com (Gary Nafis) · Stebbins & McGinnis *Western Reptiles & Amph
 | v3.002 | 203 | Content enrichment (52 Urban notes), gap finder |
 | v3.003 | 252 | +49 species, 9 synonym updates, frog calls, 14 NAME_ALIASES |
 | v3.004 | 252 | Subspecies folding, dynamic venomous warnings, chaparral fix |
-| v3.005 | 252 | Backport: badge-col, IDB offline, fetchLL pagination, ?search= |
+| v3.007 | 252 | Backport: badge-col, IDB offline, fetchLL pagination, ?search= |
 
 ## License
 
 GPL v3. iNaturalist photos CC-licensed, attributed per-image. For informational purposes only — always maintain safe distance from wildlife.
+| v3.007 | 252 | Build Lesson audit: fixed misplaced salamander, dead cross-links, hp/desc overlaps, st-pip badge fix |
+| v3.006 | 252 | Build Lesson audit: misplaced salamander, dead links, hp/desc overlap, st-pip fix |
+| v3.007 | 252 | Cross-links: +25 BUG_LINKS → labugs.org, +5 BIRD_LINKS → allaboutbirds.org. Coverage 19%→44% |
